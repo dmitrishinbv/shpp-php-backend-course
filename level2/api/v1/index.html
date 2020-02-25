@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta charset="utf-8">
+<head>
+    <title>My todos</title>
+</head>
+<body>
+<style>
+    body {
+        font-family: Verdana, Geneva, sans-serif;
+        max-width: 1000px;
+        margin: 10px auto;
+    }
+    table {
+        table-layout: fixed;
+        width:100%
+    }
+    td {
+        word-wrap:break-word;
+    }
+      #items {
+        border: 2px solid #2466b2;
+        border-collapse: collapse;
+        width: 100%;
+        margin: 10px auto;
+    }
+    #items tr {
+        border-bottom: 1px solid #2466b2;
+    }
+    #items tr:nth-child(even) {
+        background: #c7e0fc;
+    }
+
+    #items td,
+    #items th {
+        padding: 6px;
+    }
+</style>
+
+<form method="post" action="addItem.php">
+    <p align="center"><b>Введите вашe todo:</b></p>
+    <p align="center"><textarea name="todoText"
+                                style="text-align: justify; color:#8B0000; background-color:#AFEEEE; font-style: italic; font-size: 12pt"
+                                cols="60" rows="15" maxlength="1000"></textarea></p>
+    <!--<p align="center"><input name="status" type="radio" value=true>Запланировать</p>-->
+    <!--<p align="center"><input name="status" type="radio" value=false>Пометить как выполненное</p>-->
+    <p align="center"><input type='submit' name="submit" value='Отправить'></p>
+    <p></p>
+   </form>
+
+
+<p align="center"><b>Todolist</b></p>
+<table id="items"></table>
+
+<form method="post" action="changeItem.php">
+    <p align="center">Введите id записи для редактирования <input type="text" style="text-align: justify; color:#8B0000; background-color:#AFEEEE; font-style: italic; font-size: 12pt" name="idvalue" maxlength ="3" size="5">
+     <input type='submit' name="submit2" value='Редактировать!'></p>
+</form>
+
+<form method="post" action="deleteItem.php">
+    <p align="center">Введите id записи для удаления <input type="text" style="text-align: justify; color:#8B0000; background-color:#AFEEEE; font-style: italic; font-size: 12pt" name="idForDel" maxlength ="3" size="5">
+        <input type='submit' name="submit3" value='Удалить!'></p>
+</form>
+
+<? clearstatcache() ?>
+<script src="parseJSON.js?v=<?=filemtime('todos.json')?>"></script>
+
+</body>
+</html>
