@@ -1,7 +1,7 @@
 <?php
 session_start();
-//$userInfo = file_get_contents("php://input");
-$userInfo = file_get_contents("user.json");
+$userInfo = file_get_contents("php://input");
+//$userInfo = file_get_contents("user.json");
 $errors = ["Error 500. Internal Server Error", "Error 400. Bad Request", "Error. Such user not found!",
     "Error. Username and password don't match!"];
 
@@ -58,10 +58,10 @@ if ($found["id"]) {
 function generateCode($length) {
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRQSTUVWXYZ0123456789";
     $code = "";
-    $clen = strlen($chars) - 1;
+    $codeLength = strlen($chars) - 1;
 
     while (strlen($code) < $length) {
-        $code .= $chars[mt_rand(0,$clen)];
+        $code .= $chars[mt_rand(0,$codeLength)];
     }
 
     return $code;
@@ -71,10 +71,10 @@ function generateCode($length) {
 function generateSessionId($length) {
     $chars = "0123456789";
     $code = "";
-    $clen = strlen($chars) - 1;
+    $codeLength = strlen($chars) - 1;
 
     while (strlen($code) < $length) {
-        $code .= $chars[mt_rand(0,$clen)];
+        $code .= $chars[mt_rand(0,$codeLength)];
     }
 
     return (int)$code;

@@ -1,7 +1,9 @@
 <?php
-if(!isset($_SESSION)){
+if (!isset($_SESSION)) {
     session_start();
 }
+
+$errorStatuses = ["500 Internal Server Error", "400 Bad Request", "401 Unauthorized"];
 require 'connection.php';
 
 if (isset($_SESSION["hash"]) && $_SESSION["status"] === "ok") {
@@ -23,19 +25,20 @@ if (isset($_SESSION["hash"]) && $_SESSION["status"] === "ok") {
     }
 
     else {
-        error ();
+        error ($errorStatuses[0]);
     }
 
 }
 
 else {
-    error ();
-    }
+    error ($errorStatuses[2]);
+}
 
 
-function error () {
-    $data = ["error" => "Log in please!"];
-    echo json_encode($data);
+function error ($status) {
+    mysqli_close($conn);
+    $message = ["error" => $status];
+    die (json_encode($message));
 }
 
 mysqli_close($conn);

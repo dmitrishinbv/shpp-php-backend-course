@@ -1,15 +1,13 @@
 <?php
-if(!isset($_SESSION)){
+if (!isset($_SESSION)) {
     session_start();
 }
-$userInfo = file_get_contents("php://input");
-//$userInfo = file_get_contents("user.json");
 
-//$userInfo = $_SESSION['data'];
-
-$errors = ["Error 500. Internal Server Error", "Error 400. Bad Request", "Error. Such user not found!",
+$userInfo = $_SESSION['data'];
+$errors = ["Error 500. Internal Server Error",
+    "Error 400. Bad Request",
+    "Error. Such user not found!",
     "Error. Username and password don't match!"];
-
 
 if ($userInfo) {
     $userInfo = json_decode($userInfo, true);
@@ -18,9 +16,10 @@ if ($userInfo) {
         header("HTTP/1.1 .'$errors[1]'");
         echo json_encode(["error" => "$errors[1]"]);
         exit();
-}
-        $login = $userInfo ["login"];
-        $pass = $userInfo ["pass"];
+    }
+
+    $login = $userInfo ["login"];
+    $pass = $userInfo ["pass"];
 
 } else {
     header("HTTP/1.1 .'$errors[0]'");
@@ -30,61 +29,68 @@ if ($userInfo) {
 
 require 'connection.php';
 
-$found = $conn->query("SELECT * FROM users_list WHERE `login`= '$login'");
-$found = mysqli_fetch_array($found);
+$stmt = $pdo->prepare("SELECT * FROM users_list where login = ?");
 
+if ($stmt->execute([$login])) {
+    $exists = true;
+    $row = $stmt->fetch();
+    $found_id = $row["id"];
+    $found_login = $row["login"];
+    $found_pass = $row["pass"];
+    $found_hash = $row["hash"];
+}
 
-if (!$found) {
+if (!$exists) {
     header("HTTP/1.1 .'$errors[2]'");
     echo json_encode(["error" => "$errors[2]"]);
     exit();
 }
 
-if ($found['pass'] !== $pass) {
+if ($found_pass !== $pass) {
     header("HTTP/1.1 .'$errors[3]'");
     echo json_encode(["error" => "$errors[3]"]);
     exit();
 }
 
 $hash = md5(generateCode(50));
-$setHash = $conn->query("UPDATE users_list SET `hash`='$hash' WHERE `login`= '$login'");
-
 $_SESSION['hash'] = $hash;
 
-if ($found["id"]) {
-    setcookie("user_id", $found['id'], time() + 30 * 24 * 60 * 60);
-    $_COOKIE['user_id'] = $found['id'];
-    $session_id = generateSessionId(8);
-    setcookie("session_id", $session_id, time() + 30 * 24 * 60 * 60);
-    $_COOKIE['session_id'] = $session_id;
-}
+$stmt = $pdo->prepare("UPDATE users_list SET hash = ? WHERE login = ?");
+$stmt->execute([$hash, $login]);
 
-    include "check.php";
+setcookie("user_id", $found_id, time() + 30 * 24 * 60 * 60);
+$_COOKIE['user_id'] = $found_id;
+$session_id = generateSessionId(8);
+setcookie("session_id", $session_id, time() + 30 * 24 * 60 * 60);
+$_COOKIE['session_id'] = $session_id;
+
+include "check.php";
 
 
-function generateCode($length) {
+function generateCode($length)
+{
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRQSTUVWXYZ0123456789";
     $code = "";
     $codeLength = strlen($chars) - 1;
 
     while (strlen($code) < $length) {
-        $code .= $chars[mt_rand(0,$codeLength)];
+        $code .= $chars[mt_rand(0, $codeLength)];
     }
 
     return $code;
 }
 
 
-function generateSessionId($length) {
+function generateSessionId($length)
+{
     $chars = "0123456789";
     $code = "";
     $codeLength = strlen($chars) - 1;
 
     while (strlen($code) < $length) {
-        $code .= $chars[mt_rand(0,$codeLength)];
+        $code .= $chars[mt_rand(0, $codeLength)];
     }
 
     return (int)$code;
 }
-
 ?>

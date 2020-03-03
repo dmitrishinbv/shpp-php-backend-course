@@ -1,13 +1,11 @@
 <?php
 session_start();
-require_once 'connection.php';
+require 'connection.php';
 //$inputData = $_SESSION['data'];
-$inputData = file_get_contents("input.json");
+$inputData = file_get_contents("php://input");
 $inputData = json_decode($inputData, true);
 
 if (isset($_SESSION["status"]) && $_SESSION["status"] === "ok") {
-    $conn = mysqli_connect($host, $user, $password, $database) or die
-    ("<br>" . "Connection failed: " . mysqli_connect_error()) . "<br>";
 
     if (isset($inputData["text"])) {
         $text = $inputData["text"];

@@ -1,77 +1,73 @@
 <?php
 define("NUMBER_OF_COLUMNS", 3);
 
-$json = 'todos.json';
+$jsonFileName = 'todos.json';
 $input = json_decode(file_get_contents("php://input"), true);
-// $input = 'item.json';
-$errors = ["Error 500. \"Internal Server Error\"", "Error 400. \"Bad Request\""];
+//$input = json_decode(file_get_contents("item.json"), true);
+$errorStatuses = ["500 Internal Server Error", "400 Bad Request"];
 
-checkInfo($json, $input, $errors);
+$data = checkInfo($jsonFileName, $input, $errorStatuses);
+changeItem($jsonFileName, $data, $input, $errorStatuses);
 
-
-function checkInfo($json, $input, $errors)
+function checkInfo($jsonFileName, $input, $errorStatuses)
 {
-    $json = checkJson($json, $errors);
+    $data = checkJson($jsonFileName);
 
-    if ($json && $input) {
-        $json = json_decode($json, true);
+    if ($data && $input) {
+        $data = json_decode($data, true);
 
-        if (!is_array($json) || !is_array($input) || count($input) !== NUMBER_OF_COLUMNS
-            || !array_key_exists("text", $input) || !array_key_exists("id", $input)
-            || !array_key_exists("checked", $input) || !array_key_exists("items", $json)) {
-            echo(json_encode(["error" => $errors[1]]));
-            exit();
+        if (count($input) !== NUMBER_OF_COLUMNS || !isset ($input["text"]) || !isset ($input["id"])
+            || !isset ($input["checked"]) || !is_bool(boolval($input["checked"]))) {
+            showError($errorStatuses[1]);
         }
 
-        changeItem($json, $input, $errors);
 
     } else {
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
+        showError($errorStatuses[1]);
     }
 
+    return $data;
 }
 
 
-function checkJson($json, $errors)
+function checkJson($jsonFileName)
 {
-    if (is_readable($json) || is_writable($json)) {
-        $json = file_get_contents($json);
-
-    } else if (is_readable($json) || !is_writable($json)) {
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
+    if (is_readable($jsonFileName) && is_writable($jsonFileName)) {
+        $data = file_get_contents($jsonFileName);
 
     } else {
-        $json = false;
+        $data = false;
     }
 
-    return $json;
+    return $data;
 }
 
 
-function changeItem($json, $item, $errors)
+function changeItem($jsonFileName, $data, $item, $errorStatuses)
 {
-    $itemsArray = $json['items'];
-    $id = $item["id"];
+    $itemsArray = $data['items'];
 
     for ($i = 0; $i < count($itemsArray); $i++) {
         $currentItem = $itemsArray[$i];
 
-        if ($currentItem["id"] === $id) {
-            $itemsArray[$i] = array("id" => $id, "text" => $item["text"], "checked" => $item["checked"]);
+        if ($currentItem["id"] == $item["id"]) {
+            $itemsArray[$i] = array("id" => $item["id"], "text" => $item["text"], "checked" => $item["checked"]);
             $itemsArray = array("items" => $itemsArray);
-            $data[] = json_encode($itemsArray);
-            file_put_contents("todos.json", $data);
+            $data = json_encode($itemsArray);
+            file_put_contents("$jsonFileName", $data);
             echo(json_encode(["ok" => true]));
-            break;
-        }
-
-        if ($currentItem["id"] !== $id && $i === count($itemsArray) - 1) {
-            echo(json_encode(["error" => $errors[1]]));
             exit();
         }
+
     }
+    showError($errorStatuses[1]);
 }
+
+function showError($message)
+{
+    header("HTTP/1.1 $message");
+    die (json_encode(['error' => $message]));
+}
+
 
 ?>

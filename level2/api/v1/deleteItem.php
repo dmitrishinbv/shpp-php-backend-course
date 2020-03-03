@@ -1,59 +1,53 @@
 <?php
 $input = json_decode(file_get_contents("php://input"), true);
 
-$json = 'todos.json';
+$jsonFileName = 'todos.json';
 //$input = json_decode(file_get_contents('item.json'), true);
-$errors = ["Error 500. \"Internal Server Error\"", "Error 400. \"Bad Request\""];
+$errorStatuses = ["500 Internal Server Error", "400 Bad Request"];
 
-checkInfo($json, $input, $errors);
+$data = checkInfo($jsonFileName, $input, $errorStatuses);
+deleteItem($jsonFileName, $data, $input, $errorStatuses);
 
-function checkInfo($json, $input, $errors)
+function checkInfo($jsonFileName, $input, $errorStatuses)
 {
-    $json = checkJson($json, $errors);
+    $data = checkJson($jsonFileName);
 
-    if ($json) {
-        $json = json_decode($json, true);
+    if ($data && $input) {
+        $data = json_decode($data, true);
 
-        if (!is_array($json) || !is_array($input) || count($input) != 1 || !array_key_exists("id", $input)) {
-            echo(json_encode(["error" => $errors[1]]));
-            exit();
+        if (count($input) !== 1 || !isset ($input["id"]) || !is_numeric((int) ($input["id"]))) {
+            showError($errorStatuses[1]);
         }
 
-        deleteItem($json, $input, $errors);
-
     } else {
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
+        showError($errorStatuses[1]);
     }
+
+    return $data;
 }
 
 
-function checkJson($json, $errors)
+function checkJson($jsonFileName)
 {
-    if (is_readable($json) || is_writable($json)) {
-        $json = file_get_contents($json);
-
-    } else if (is_readable($json) || !is_writable($json)) {
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
+    if (is_readable($jsonFileName) && is_writable($jsonFileName)) {
+        $data = file_get_contents($jsonFileName);
 
     } else {
-        $json = false;
+        $data = false;
     }
 
-    return $json;
+    return $data;
 }
 
 
-function deleteItem($json, $input, $errors)
+function deleteItem($jsonFileName, $data, $input, $errorStatuses)
 {
-    $itemsArray = $json["items"];
     $id = $input["id"];
     $foundItem = false;
 
-    if (count($itemsArray) > 1) {
-        foreach ($itemsArray as $arr) {
-            if ($arr["id"] === $id) {
+    if (count($data["items"]) > 1) {
+        foreach ($data["items"] as $arr) {
+            if ($arr["id"] == $id) {
                 $foundItem = true;
                 continue;
             } else {
@@ -62,24 +56,24 @@ function deleteItem($json, $input, $errors)
         }
 
         if ($foundItem) {
-            $newArray = array("items" => $newArray);
-            file_put_contents("todos.json", json_encode($newArray));
+            $newArray = ["items" => $newArray];
+            file_put_contents("$jsonFileName", json_encode($newArray));
             showOk();
 
         } else {
-            showError ($errors[1]);
+            showError ($errorStatuses[1]);
         }
     }
 
     else {
-        if ($itemsArray[0]["id"] === $id) {
-            $newArray = array("items" => []);
-            file_put_contents("todos.json", json_encode($newArray));
+        if ($data["items"][0]["id"] === $id) {
+            $newArray = ["items" => []];
+            file_put_contents("$jsonFileName", json_encode($newArray));
             showOk();
              }
 
         else {
-            showError ($errors[1]);
+            showError ($errorStatuses[1]);
         }
     }
 }

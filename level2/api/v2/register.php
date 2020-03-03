@@ -5,8 +5,8 @@ define ("MAX_PASS_SYMBOLS", 30);
 define ("MAX_LOGIN_SYMBOLS", 40);
 require 'connection.php';
 
-// $userInfo = file_get_contents("php://input");
-$userInfo = file_get_contents("input.json");
+$userInfo = file_get_contents("php://input");
+//$userInfo = file_get_contents("input.json");
 
 //$userInfo = $_SESSION['data'];
 
@@ -47,8 +47,9 @@ $hash = password_hash($pass, PASSWORD_DEFAULT);
 
 $query = mysqli_query($conn,"INSERT INTO users_list (login, pass, hash) VALUES ('$login', '$pass', '$hash')");
 
+header("HTTP/1.1 200 OK");
 echo json_encode(["ok" => true]);
-include "logout.php";
+
 mysqli_close($conn);
 
 

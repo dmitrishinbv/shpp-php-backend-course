@@ -25,6 +25,7 @@ if (isset($_SESSION['hash']) and isset($_COOKIE['user_id']) and isset($_COOKIE['
     }
 
     else {
+        header("HTTP/1.1 200 OK");
         $response = json_encode(["ok" => true]);
         $_SESSION["status"] = "ok";
     }
@@ -33,6 +34,7 @@ if (isset($_SESSION['hash']) and isset($_COOKIE['user_id']) and isset($_COOKIE['
 
 } else {
     unset ($_SESSION["status"]);
+    header("HTTP/1.1 401 Unathorized");
     $response = json_encode(["error" => "Log in please!"]);
     $_SESSION["error"] = "Log in please!";
 }

@@ -39,7 +39,8 @@ Vue.component("task", {
 	`
 });
 
-const url = "http://localhost/api/v1";
+const url = "http://localhost/api/v2/";
+const site = "http://localhost/api/v2/LoginToDo/login.html";
 let vue = new Vue({
 	el: '#app',
 	data: {
@@ -55,8 +56,8 @@ let vue = new Vue({
 	},
 	methods: {
 		getItems: function(){
-			fetch(url+'/getItems.php')
-			    .then(res => res.json())
+			fetch(url + 'getItems.php', {credentials: 'include'})
+				.then(res => res.json())
 				.then((response) => {
 					this.items = response.items.map((item) => {
 						item.editable = false;
@@ -66,9 +67,10 @@ let vue = new Vue({
 		},
 		getDelete: function(index){
 			let request = JSON.stringify({id: index, });
-			fetch(url + '/deleteItem.php', {
+			fetch(url + 'deleteItem.php', {
 				method: 'DELETE',
 				body: request,
+				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json;'
 				},
@@ -83,9 +85,10 @@ let vue = new Vue({
 		},
 		getPost: function(){
 			let request = JSON.stringify({text: this.new_task.text});
-			fetch(url + '/addItem.php', {
+			fetch(url + 'addItem.php', {
 				method: 'POST',
 				body: request,
+				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json;'
 				},
@@ -101,9 +104,10 @@ let vue = new Vue({
 		},
 		getPut: function(index, id){
 			let request = JSON.stringify({text: this.items[index].text, id: id,  checked: this.items[index].checked});
-			fetch(url + '/changeItem.php', {
+			fetch(url + 'changeItem.php', {
 				method: 'PUT',
 				body: request,
+				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json;'
 				},
@@ -116,7 +120,7 @@ let vue = new Vue({
 			this.getDelete(index)
 		},
 		add_task() {
-			if(this.new_task.text !== '' || this.new_task.text !== ' '){
+			if(this.new_task.text.trim() !== ''){
 				this.getPost()
 			}
 		},
@@ -138,6 +142,18 @@ let vue = new Vue({
 		disable(index){
 			this.items[index].editable = false;
 			this.items[index].inputedit = '';
+		},
+		exit(){
+			fetch(url + 'logout.php', {
+				method: 'POST',
+				credentials: 'include',
+			}).then(res => res.json())
+				.then((response) => {
+					if(response.ok){
+						localStorage.clear();
+						window.location = site;
+					}
+				});
 		}
 	 },
 	mounted() {

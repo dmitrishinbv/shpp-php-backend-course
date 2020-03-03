@@ -2,76 +2,57 @@
 define("START_ID", 1);
 
 $input = json_decode(file_get_contents("php://input"), true);
-$json = 'todos.json';
-// $input = 'item.json';
-$id = 'ids';
-$errors = ["Error 500. Internal Server Error", "Error 400. Bad Request"];
+$dataFileName = "todos.json";
+//$input = json_decode(file_get_contents("item.json"), true);
+$idsFileName = "ids";
+$errorStatus = ["Error 500. Internal Server Error", "Error 400. Bad Request"];
 
-checkInfo($json, $input, $id, $errors);
+checkInfo($dataFileName, $input, $idsFileName, $errorStatus);
 
 
-function checkInfo($json, $input, $id, $errors)
+function checkInfo($dataFileName, $input, $idsFileName, $errorStatus)
 {
-    $json = checkJson($json, $errors);
-    if (!file_exists($id) && !$json) {
-        $id = file_put_contents('ids', START_ID);
-
-    } else if ((!is_readable($id) || !is_writable($id)) && $json) {
-        header($errors[0]);
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
+     if (!file_exists($idsFileName)) {
+        $id = file_put_contents('$idsFileName', START_ID);
 
     } else {
-        $id = file_get_contents($id);
+        $id = file_get_contents($idsFileName);
     }
 
-    if ($json && $input) {
-        $json = json_decode($json, true);
+    if (!file_exists($dataFileName) || empty(file_get_contents($dataFileName))) {
+        addFirstItem($input);
+        exit();
+   }
 
-        if (!is_array($json) || !is_array($input) || count($input) !== 1 || !array_key_exists("text", $input)
-            || !array_key_exists("items", $json)) {
-            header($errors[1]);
-            echo(json_encode(["error" => $errors[1]]));
-            exit();
+
+    if ($dataFileName && $input) {
+        $data = json_decode(file_get_contents($dataFileName), true);
+        if (count($input) !== 1 || !isset($input["text"]) || !isset($data["items"])) {
+            header("HTTP/1.1 $errorStatus[1]");
+            die(json_encode(["error" => $errorStatus[1]]));
         }
     }
 
-    addItem($json, $id, $input);
+    addNextItem($dataFileName, $data, $id, $input);
 }
 
 
-function checkJson($json, $errors)
-{
-    if (is_readable($json) || is_writable($json)) {
-        $json = file_get_contents($json);
-
-    } else if (is_readable($json) || !is_writable($json)) {
-        header($errors[0]);
-        echo(json_encode(["error" => $errors[0]]));
-        exit();
-
-    } else {
-        $json = false;
-    }
-    return $json;
-}
-
-
-function addItem($json, $id, $input)
-{
-    if (!$json) {
-        $response[] = array("id" => START_ID, "text" => $input["text"], "checked" => false);
-        $id = file_put_contents('ids', START_ID);
-
-    } else {
-        $response = $json["items"];
-        $response[] = array("id" => ++$id, "text" => $input["text"], "checked" => false);
-        file_put_contents('ids', $id);
-    }
-
-    $response = array('items' => $response);
-    $data[] = json_encode($response);
+function addFirstItem($input) {
+    $response[] = ["id" => START_ID, "text" => $input["text"], "checked" => false];
+    file_put_contents('ids', START_ID);
+    $data[] = json_encode(['items' => $response]);
     file_put_contents("todos.json", $data);
+    header("HTTP/1.1 200 OK");
+    echo json_encode(["id" => START_ID]);
+}
+
+
+function addNextItem($dataFileName, $data, $id, $input)
+{
+     $data["items"][] = ["id" => ++$id, "text" => $input["text"], "checked" => false];
+     file_put_contents('ids', $id);
+    file_put_contents("$dataFileName", json_encode($data));
+    header("HTTP/1.1 200 OK");
     echo json_encode(["id" => $id]);
 }
 ?>

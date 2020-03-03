@@ -2,8 +2,8 @@
 session_start();
 $inputData = file_get_contents('php://input');
 
-//$inputData = file_get_contents('input.json');
-
+//$inputData = file_get_contents('insertItem.json');
+//$inputData = file_get_contents('user.json');
 $action = $_GET["action"] ?? "";
 //$uri = "http://localhost/api/v3/";
 

@@ -23,16 +23,13 @@ if (isset($_SESSION['hash']) and isset($_COOKIE['user_id']) and isset($_COOKIE['
         setcookie("session_id", "", time() - 3600 * 24 * 30 * 12, "/");
         $response = json_encode(["error" => "Session expired!"]);
     }
-
-    else {
-        $response = json_encode(["ok" => true]);
-        $_SESSION["status"] = "ok";
-    }
+    header("HTTP/1.1 200 OK");
+    $response = json_encode(["ok" => true]);
+    $_SESSION["status"] = "ok";
 
 
 
 } else {
-    unset ($_SESSION["status"]);
     $response = json_encode(["error" => "Log in please!"]);
     $_SESSION["error"] = "Log in please!";
 }

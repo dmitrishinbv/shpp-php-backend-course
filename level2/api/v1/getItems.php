@@ -1,22 +1,19 @@
 <?php
-$json = 'todos.json';
+$dataFileName = 'todos.json';
+$errorStatus = ["500 Internal Server Error", "502 Bad Gateway"];
 
-$errorText = "Error 500. Internal Server Error";
-$error = ["error" => $errorText];
-
-if (!is_readable($json) || !file_exists($json)) {
-    header($errorText);
-    echo json_encode($error);
-    exit();
+if (!file_exists($dataFileName) || !is_readable($dataFileName)) {
+    header("HTTP 1.1 $errorStatus[0]");
+    die(json_encode(["error" => $errorStatus[0]]));
 }
 
-$json = json_decode(file_get_contents($json), true);
+$data = json_decode(file_get_contents($dataFileName), true);
 
-if (!is_array($json) || !array_key_exists("items", $json)) {
-    header($errorText);
-    echo json_encode($error);
-    exit();
+if (!isset($data["items"])) {
+    header("HTTP/1.1 $errorStatus[1]");
+    die(json_encode(["error" => $errorStatus[1]]));
 }
 
-echo json_encode($json, true);
+header("HTTP/1.1 200 OK");
+echo json_encode($data, true);
 ?>

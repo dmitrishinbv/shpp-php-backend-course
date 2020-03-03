@@ -12,10 +12,9 @@ if  (!file_get_contents("input.json")) {
     exit();
 }
 
-$inputData = file_get_contents("input.json");
+$inputData = file_get_contents("php://input");
 $inputData = json_decode($inputData, true);
 
-// $inputData = file_get_contents("php://input");
 
 require_once 'connection.php';
 

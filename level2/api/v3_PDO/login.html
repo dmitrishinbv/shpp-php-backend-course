@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo/Ш++</title>
+    <link rel="stylesheet" href="login.css">
+    <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="Login">
+        <h1>ToDo<span style="color: darkgreen">/</span>Ш++</h1>
+        <div class="LoginInput">
+            <input v-model="nickName" type="text" placeholder="Nickname" autofocus required>
+            <input v-model="pass" type="password" placeholder="Password" autofocus required>
+        </div>
+        <div class="LoginButton">
+            <button @click="register()">Register</button>
+            <button @click="login()">Login</button>
+        </div>
+    </div>
+</div>
+<script>
+	const url = "https://aboyko.shpp.me/api/v2/router.php?action=";
+	const site = "https://shpptodov3.herokuapp.com/ToDov3/index.html";
+	let vue = new Vue({
+		el: '#app',
+		data: {
+			nickName: '',
+            pass: ''
+		},
+		methods: {
+			login(){
+				if(this.nickName.trim() !== '' && this.pass.trim()) {
+					let request = JSON.stringify({login: this.nickName, pass: this.pass});
+					fetch(url + 'login', {
+						method: 'POST',
+						body: request,
+						credentials: 'include',
+						headers: {
+							'Content-Type': 'application/json;'
+						},
+					}).then(res => res.json())
+						.then((response) => {
+							if (response.ok) {
+								localStorage.setItem('name', request.login);
+								window.location = site;
+							} else {
+								alert("Error 500. Internal server error. Please try again later")
+							}
+						});
+				}}},
+			register(){
+				if(this.nickName.trim() !== '' && this.pass.trim()) {
+				let request = JSON.stringify({login: this.nickName, pass: this.pass});
+				fetch(url + 'register', {
+					method: 'POST',
+					body: request,
+					headers: {
+						'Content-Type': 'application/json;'
+					},
+				}).then(res => res.json())
+					.then((response) => {
+						if (response.ok) {
+							this.nickName = '';
+							this.pass = '';
+							alert('ПОЗДРАВЛЯЮ ТЕПЕРЬ ВЫ ЗАРЕГИСТРИРОВАЛИСЬ \n' +
+                                'А теперь можешь войти на сайт)')
+
+						} else {
+							alert("Error 500. Internal server error. Please try again later")
+						}
+					});
+			}},
+	});
+</script>
+</body>
+</html>

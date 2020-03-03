@@ -1,5 +1,5 @@
 <?php
-if(!isset($_SESSION)){
+if (!isset($_SESSION)) {
     session_start();
 }
 require 'connection.php';
@@ -15,25 +15,28 @@ if (isset($_SESSION["hash"]) && $_SESSION["status"] === "ok") {
         $data = [];
 
         while ($row = mysqli_fetch_assoc($result)) {
+            if ($row["checked"] == 0) {
+                $row["checked"] = false;
+            }
+            if ($row["checked"] == 1) {
+                $row["checked"] = true;
+            }
             $data[] = $row;
         }
 
         $data = ["items" => $data];
         echo json_encode($data);
+    } else {
+        error();
     }
 
-    else {
-        error ();
-    }
-
+} else {
+    error();
 }
 
-else {
-    error ();
-    }
 
-
-function error () {
+function error()
+{
     $data = ["error" => "Log in please!"];
     echo json_encode($data);
 }
